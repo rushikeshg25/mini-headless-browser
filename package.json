@@ -1,0 +1,13 @@
+{
+  "name": "mini-headless-browser",
+  "version": "0.1.0",
+  "description": "A tiny headless browser engine built from scratch in Node.js (no Chromium).",
+  "type": "module",
+  "bin": {
+    "mhb": "./browser.js"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "license": "MIT"
+}
