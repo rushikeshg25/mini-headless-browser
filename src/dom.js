@@ -34,3 +34,25 @@ export function classList(node) {
 export function id(node) {
   return node.attrs?.id ?? null;
 }
+
+// Simple selector matching: a single tag, #id, .class, or * (no combinators).
+export function matches(node, selector) {
+  if (node.type !== 'element') return false;
+  if (selector === '*') return true;
+  if (selector[0] === '#') return id(node) === selector.slice(1);
+  if (selector[0] === '.') return classList(node).includes(selector.slice(1));
+  return node.tag === selector.toLowerCase();
+}
+
+// All descendant elements (excluding the root itself) matching the selector.
+export function querySelectorAll(root, selector) {
+  const out = [];
+  const walk = (node) => {
+    for (const child of node.children ?? []) {
+      if (matches(child, selector)) out.push(child);
+      walk(child);
+    }
+  };
+  walk(root);
+  return out;
+}
