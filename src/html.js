@@ -1,8 +1,11 @@
-// A small HTML tokenizer. Turns an HTML string into a flat list of tokens:
+// A small HTML tokenizer + tree builder. `tokenize` turns an HTML string into a
+// flat list of tokens:
 //   { type: 'open',  tag, attrs, selfClosing }
 //   { type: 'close', tag }
 //   { type: 'text',  text }
-// It is forgiving rather than spec-complete: enough to parse ordinary markup.
+// `parse` folds those tokens into a DOM tree using an open-element stack.
+
+import { element, text as textNode, appendChild } from './dom.js';
 
 const VOID_ELEMENTS = new Set([
   'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
@@ -53,6 +56,35 @@ export function tokenize(html) {
   }
 
   return tokens;
+}
+
+// Build a DOM tree from HTML. Returns a synthetic 'document' root element whose
+// children are the top-level nodes of the input.
+export function parse(html) {
+  const tokens = tokenize(html);
+  const root = element('document');
+  const stack = [root];
+  const top = () => stack[stack.length - 1];
+
+  for (const tok of tokens) {
+    if (tok.type === 'text') {
+      appendChild(top(), textNode(tok.text));
+    } else if (tok.type === 'open') {
+      const el = element(tok.tag, tok.attrs, []);
+      appendChild(top(), el);
+      if (!tok.selfClosing) stack.push(el);
+    } else if (tok.type === 'close') {
+      // Pop back to the matching open tag, if there is one on the stack.
+      for (let i = stack.length - 1; i >= 1; i--) {
+        if (stack[i].tag === tok.tag) {
+          stack.length = i;
+          break;
+        }
+      }
+    }
+  }
+
+  return root;
 }
 
 function parseTag(raw) {
