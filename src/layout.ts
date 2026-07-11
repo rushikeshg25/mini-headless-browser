@@ -6,20 +6,27 @@
 // Text nodes occupy a single line. Supported properties: display (block|none),
 // width, height, and uniform margin/padding (a single length like "2px").
 
-function px(value) {
+import type { Box, ElementBox, StyledElement } from './types.ts';
+
+function px(value: string | undefined): number {
   if (value == null) return 0;
   const m = String(value).match(/-?\d+/);
   return m ? parseInt(m[0], 10) : 0;
 }
 
-export function layoutTree(styled, containerWidth) {
+export function layoutTree(styled: StyledElement, containerWidth: number): ElementBox | null {
   return layoutBlock(styled, 0, 0, containerWidth);
 }
 
 // Lays out `styled` whose margin box starts at (x, y). Returns a box, or null
 // when the element is display:none.
-function layoutBlock(styled, x, y, containerWidth) {
-  const s = styled.specified ?? {};
+function layoutBlock(
+  styled: StyledElement,
+  x: number,
+  y: number,
+  containerWidth: number,
+): ElementBox | null {
+  const s = styled.specified;
   if (s.display === 'none') return null;
 
   const margin = px(s.margin);
@@ -32,10 +39,10 @@ function layoutBlock(styled, x, y, containerWidth) {
   const contentX = boxX + padding;
   const contentWidth = Math.max(0, width - 2 * padding);
 
-  const children = [];
+  const children: Box[] = [];
   let cursorY = boxY + padding;
 
-  for (const child of styled.children ?? []) {
+  for (const child of styled.children) {
     if (child.type === 'text') {
       children.push({
         type: 'text',

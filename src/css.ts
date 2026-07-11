@@ -3,11 +3,13 @@
 // Supports comma-separated simple selectors and `key: value;` declaration blocks.
 // Comments (/* ... */) are stripped first. No @-rules, nesting, or combinators.
 
-export function parseCss(text) {
+import type { Declarations, Rule } from './types.ts';
+
+export function parseCss(text: string): Rule[] {
   const clean = text.replace(/\/\*[\s\S]*?\*\//g, '');
-  const rules = [];
+  const rules: Rule[] = [];
   const re = /([^{}]+)\{([^}]*)\}/g;
-  let m;
+  let m: RegExpExecArray | null;
 
   while ((m = re.exec(clean)) !== null) {
     const selectors = m[1]
@@ -21,8 +23,8 @@ export function parseCss(text) {
   return rules;
 }
 
-function parseDeclarations(block) {
-  const declarations = {};
+function parseDeclarations(block: string): Declarations {
+  const declarations: Declarations = {};
   for (const part of block.split(';')) {
     const idx = part.indexOf(':');
     if (idx === -1) continue;

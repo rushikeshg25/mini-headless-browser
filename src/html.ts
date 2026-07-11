@@ -5,15 +5,16 @@
 //   { type: 'text',  text }
 // `parse` folds those tokens into a DOM tree using an open-element stack.
 
-import { element, text as textNode, appendChild } from './dom.js';
+import { element, text as textNode, appendChild } from './dom.ts';
+import type { Attrs, DomElement, OpenToken, Token } from './types.ts';
 
 const VOID_ELEMENTS = new Set([
   'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
   'link', 'meta', 'param', 'source', 'track', 'wbr',
 ]);
 
-export function tokenize(html) {
-  const tokens = [];
+export function tokenize(html: string): Token[] {
+  const tokens: Token[] = [];
   let i = 0;
   const n = html.length;
 
@@ -60,11 +61,11 @@ export function tokenize(html) {
 
 // Build a DOM tree from HTML. Returns a synthetic 'document' root element whose
 // children are the top-level nodes of the input.
-export function parse(html) {
+export function parse(html: string): DomElement {
   const tokens = tokenize(html);
   const root = element('document');
-  const stack = [root];
-  const top = () => stack[stack.length - 1];
+  const stack: DomElement[] = [root];
+  const top = (): DomElement => stack[stack.length - 1];
 
   for (const tok of tokens) {
     if (tok.type === 'text') {
@@ -87,7 +88,7 @@ export function parse(html) {
   return root;
 }
 
-function parseTag(raw) {
+function parseTag(raw: string): OpenToken {
   const selfClosing = raw.endsWith('/');
   const body = selfClosing ? raw.slice(0, -1).trim() : raw;
 
@@ -103,10 +104,10 @@ function parseTag(raw) {
   };
 }
 
-function parseAttrs(str) {
-  const attrs = {};
+function parseAttrs(str: string): Attrs {
+  const attrs: Attrs = {};
   const re = /([a-zA-Z_:][\w:.-]*)(?:\s*=\s*("[^"]*"|'[^']*'|[^\s"'>]+))?/g;
-  let m;
+  let m: RegExpExecArray | null;
   while ((m = re.exec(str)) !== null) {
     const name = m[1].toLowerCase();
     let value = m[2] ?? '';
@@ -118,6 +119,6 @@ function parseAttrs(str) {
   return attrs;
 }
 
-function collapseWhitespace(text) {
+function collapseWhitespace(text: string): string {
   return text.replace(/\s+/g, ' ');
 }

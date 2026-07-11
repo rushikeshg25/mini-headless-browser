@@ -2,13 +2,14 @@
 // mhb — a tiny headless browser engine. CLI entry point.
 // Runs the full pipeline: fetch -> parse -> style -> layout -> paint.
 
-import { fetchPage } from './src/fetch.js';
-import { parse } from './src/html.js';
-import { querySelectorAll, textContent } from './src/dom.js';
-import { parseCss } from './src/css.js';
-import { styleTree } from './src/style.js';
-import { layoutTree } from './src/layout.js';
-import { paint } from './src/paint.js';
+import { fetchPage } from './src/fetch.ts';
+import { parse } from './src/html.ts';
+import { querySelectorAll, textContent } from './src/dom.ts';
+import { parseCss } from './src/css.ts';
+import { styleTree } from './src/style.ts';
+import { layoutTree } from './src/layout.ts';
+import { paint } from './src/paint.ts';
+import type { DomNode } from './src/types.ts';
 
 // A minimal user-agent stylesheet: hide non-rendered head content and give the
 // page body a little breathing room.
@@ -20,7 +21,7 @@ const UA_STYLESHEET = `
   body { padding: 1px; }
 `;
 
-function usage() {
+function usage(): void {
   console.log(`mhb — mini headless browser
 
 Usage:
@@ -35,13 +36,13 @@ Options:
 `);
 }
 
-function printTree(node, depth = 0) {
+function printTree(node: DomNode, depth = 0): void {
   const pad = '  '.repeat(depth);
   if (node.type === 'text') {
     console.log(`${pad}"${node.text}"`);
     return;
   }
-  const attrs = Object.entries(node.attrs ?? {})
+  const attrs = Object.entries(node.attrs)
     .map(([k, v]) => ` ${k}="${v}"`)
     .join('');
   const label = node.tag === 'document' ? '#document' : `<${node.tag}${attrs}>`;
@@ -49,7 +50,7 @@ function printTree(node, depth = 0) {
   for (const child of node.children) printTree(child, depth + 1);
 }
 
-async function main() {
+async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const target = args.find((a) => !a.startsWith('--'));
   if (!target) {
@@ -72,10 +73,10 @@ async function main() {
   const rules = parseCss(UA_STYLESHEET + '\n' + pageCss);
   const styled = styleTree(doc, rules);
   const layout = layoutTree(styled, width);
-  console.log(paint(layout));
+  if (layout) console.log(paint(layout));
 }
 
-main().catch((err) => {
-  console.error(`mhb: ${err.message}`);
+main().catch((err: unknown) => {
+  console.error(`mhb: ${err instanceof Error ? err.message : String(err)}`);
   process.exit(1);
 });

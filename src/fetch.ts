@@ -5,7 +5,7 @@
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
-export async function fetchPage(target) {
+export async function fetchPage(target: string): Promise<string> {
   if (/^https?:\/\//i.test(target)) {
     const res = await fetch(target);
     if (!res.ok) {
