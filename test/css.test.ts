@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseCss } from '../src/css.js';
+import { parseCss } from '../src/css.ts';
 
 test('parses a single rule with declarations', () => {
   const rules = parseCss('p { color: red; margin: 4px; }');

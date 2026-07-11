@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
-import { fetchPage } from '../src/fetch.js';
+import { fetchPage } from '../src/fetch.ts';
 
 const sample = fileURLToPath(new URL('../examples/sample.html', import.meta.url));
 

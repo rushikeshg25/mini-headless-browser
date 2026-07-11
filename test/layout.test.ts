@@ -1,18 +1,21 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parse } from '../src/html.js';
-import { parseCss } from '../src/css.js';
-import { styleTree } from '../src/style.js';
-import { layoutTree } from '../src/layout.js';
+import { parse } from '../src/html.ts';
+import { parseCss } from '../src/css.ts';
+import { styleTree } from '../src/style.ts';
+import { layoutTree } from '../src/layout.ts';
+import type { ElementBox } from '../src/types.ts';
 
-function layout(html, css, width) {
+function layout(html: string, css: string, width: number): ElementBox {
   const styled = styleTree(parse(html), parseCss(css));
-  return layoutTree(styled, width);
+  const box = layoutTree(styled, width);
+  assert.ok(box);
+  return box;
 }
 
 test('block children stack vertically', () => {
   const root = layout('<div><p>a</p><p>b</p></div>', '', 20);
-  const div = root.children[0];
+  const div = root.children[0] as ElementBox;
   assert.equal(div.children[0].y, 0);
   assert.equal(div.children[1].y, 1);
   assert.equal(div.height, 2);
@@ -31,7 +34,7 @@ test('margins push following blocks down', () => {
 
 test('width and padding shrink the content box', () => {
   const root = layout('<div style="width:8px; padding:1px"><p>x</p></div>', '', 40);
-  const div = root.children[0];
+  const div = root.children[0] as ElementBox;
   assert.equal(div.width, 8);
   // content x is inset by the padding
   assert.equal(div.children[0].x, div.x + 1);
